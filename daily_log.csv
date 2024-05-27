@@ -1,16 +1,2 @@
 LogEntry,Tags,Date
-"Going through Jira email backlog
-Tested two TFW tickets
-Reached out to Steve Anger, then Jessica B, then Chuck S to figure out TR -> AMx bridge
-Tested TR -> AMx 
-Released TFW tickets
-Testing login page can into issue with users that has no access to TR but access to Zywave
-
-Triaged ticket for legacy API
-
-Setup users for Ascension
-edward.knueppel+asc@zywave.com/Ascension!1
-Read Replica","Log, AE Standup, RO Standup",2024-03-19 00:00:00
-,Log,2024-05-26 00:00:00
-,Log,2024-05-26 00:00:00
-,Log,2024-05-26 00:00:00
+Test,Log,2024-05-26 00:00:00

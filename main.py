@@ -16,8 +16,9 @@ def load_dataframe():
     except FileNotFoundError:
         # Create an empty DataFrame if file not found
         return pd.DataFrame(columns=['LogEntry', 'Tags', 'Date'])
-        
-def on_text_change():
+
+def submit_entry():
+    st.session_state.new_entry = st.session_state.entry_textarea
     st.session_state.entry_textarea = ''
 
 # Main app
@@ -44,16 +45,19 @@ def main():
         # Input for new LogEntry
         if "entry_textarea" not in st.session_state:
             st.session_state.entry_textarea = ""
-        new_entry = st.text_area('Entry', height=20, label_visibility="collapsed", key="entry_textarea")
-        st.write(f"You wrote {len(new_entry)} characters.")
+        if "new_entry" not in st.session_state:
+            st.session_state.new_entry = ""
+
+        st.text_area('Entry', height=20, label_visibility="collapsed", key="entry_textarea")
+        st.write(f"You wrote {len(st.session_state.new_entry)} characters.")
 
         # Multiselect for tag selection
         tags = ['Log', 'AE Standup', 'RO Standup', 'Task', 'Reminder']
         selected_tags = st.multiselect("Select tags", tags, default='Log', key="tags_multiselect")
 
-        if st.button("Add", key="add_button", on_click=on_text_change):
+        if st.button("Add", key="add_button", on_click=submit_entry):
             st.session_state.df.loc[len(st.session_state.df)] = pd.Series(
-                {'LogEntry': "\n".join(new_entry.splitlines()), 
+                {'LogEntry': "\n".join(st.session_state.new_entry.splitlines()), 
                 'Tags': ", ".join(selected_tags), 
                 'Date': pd.to_datetime(date)})
             
