@@ -2,14 +2,16 @@ import streamlit as st
 import pandas as pd
 import datetime as dt
 
+LOG_FILE = "daily_log.csv"
+
 # Function to save DataFrame
 def save_dataframe(df):
-    df.to_csv("daily_log.csv", index=False)  # Saves to a CSV file
+    df.to_csv(LOG_FILE, index=False)  # Saves to a CSV file
 
 # Function to load DataFrame (if it exists)
 def load_dataframe():
     try:
-        df = pd.read_csv("daily_log.csv")
+        df = pd.read_csv(LOG_FILE)
         return df
     except FileNotFoundError:
         # Create an empty DataFrame if file not found
@@ -22,12 +24,18 @@ def main():
         st.session_state.df = load_dataframe()
 
     st.title("Captain's Log")
+    st.logo('father.jpg')
+    # View Constants
+    ADD = "Add Log Entry"
+    LOGS_RAW = "View Raw Logs"
+    LOGS = "View Logs"
+    CHARTS = "View Charts"
 
     # Navigation
-    menu = ["Home", "View Raw Logs", "View Logs", "View Charts"]
-    choice = st.sidebar.selectbox("Menu", menu)
+    views = [ADD, LOGS_RAW, LOGS, CHARTS]
+    choice = st.sidebar.selectbox("Menu", views)
 
-    if choice == "Home":
+    if choice == ADD:
         st.subheader("Add a new Log. . .")
         date = st.date_input("Select date", dt.datetime.now(), key="date_input")
         # Input for new LogEntry
@@ -43,26 +51,27 @@ def main():
                 'Tags': ", ".join(selected_tags), 
                 'Date': pd.to_datetime(date)})
             # Save the updated DataFrame
-            save_dataframe(st.session_state.df)    
-    elif choice == "View Raw Logs":
-        st.subheader("View LogEntries")
+            save_dataframe(st.session_state.df)  
+              
+    elif choice == LOGS_RAW:
+        st.subheader(LOGS_RAW)
         # Display DataFrame with sorting and filtering options
         st.dataframe(st.session_state.df)
-    elif choice == "View Logs":
-        st.subheader("View LogEntries")
+
+    elif choice == LOGS:
+        st.subheader(LOGS)
         temp = st.session_state.df
-        print(temp)
+        temp['Date'] = pd.to_datetime(temp['Date'])
+
         # Add filters for tags and dates
         tags = st.multiselect("Select tags", st.session_state.df['Tags'].unique())
-
         date = st.date_input("Select date", dt.datetime.now())
-        date = pd.to_datetime(date)
+        
         if tags:
             temp = temp[temp['Tags'].isin(tags)]
         if not st.checkbox("Show all logs", True):
             if date:
-                #temp['Date'] = pd.to_datetime(temp['Date'])
-                temp = temp[temp['Date'].date() == date.date()]
+                temp = temp[temp['Date'] == pd.to_datetime(date)]
 
         # Display DataFrame with sorting and filtering options
         for i, row in temp.iterrows():
@@ -70,8 +79,9 @@ def main():
                 st.write(f"LogEntry: {row['LogEntry']}")
                 st.write(f"Tags: {row['Tags']}")
                 st.write(f"Date: {row['Date']}")
-    elif choice == "View Charts":
-        st.subheader("View LogEntries")
+
+    elif choice == CHARTS:
+        st.subheader(CHARTS)
         temp = st.session_state.df
 
         # Add a chart for the number of logs per day
