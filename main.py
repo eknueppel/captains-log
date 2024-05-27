@@ -15,14 +15,16 @@ def load_dataframe():
         return df
     except FileNotFoundError:
         # Create an empty DataFrame if file not found
-        return pd.DataFrame(columns=['LogEntry', 'Tags', 'Date', 'Time'])
+        return pd.DataFrame(columns=['LogEntry', 'Tags', 'Date'])
+        
+def on_text_change():
+    st.session_state.entry_textarea = ''
 
 # Main app
 def main():
     # Initialize an empty DataFrame
     if 'df' not in st.session_state:
         st.session_state.df = load_dataframe()
-
     st.title("Captain's Log")
     st.logo('father.jpg')
     # View Constants
@@ -38,21 +40,26 @@ def main():
     if choice == ADD:
         st.subheader("Add a new Log. . .")
         date = st.date_input("Select date", dt.datetime.now(), key="date_input")
+        
         # Input for new LogEntry
+        if "entry_textarea" not in st.session_state:
+            st.session_state.entry_textarea = ""
         new_entry = st.text_area('Entry', height=20, label_visibility="collapsed", key="entry_textarea")
         st.write(f"You wrote {len(new_entry)} characters.")
+
         # Multiselect for tag selection
         tags = ['Log', 'AE Standup', 'RO Standup', 'Task', 'Reminder']
         selected_tags = st.multiselect("Select tags", tags, default='Log', key="tags_multiselect")
 
-        if st.button("Add", key="add_button"):
+        if st.button("Add", key="add_button", on_click=on_text_change):
             st.session_state.df.loc[len(st.session_state.df)] = pd.Series(
                 {'LogEntry': "\n".join(new_entry.splitlines()), 
                 'Tags': ", ".join(selected_tags), 
                 'Date': pd.to_datetime(date)})
+            
             # Save the updated DataFrame
             save_dataframe(st.session_state.df)  
-              
+
     elif choice == LOGS_RAW:
         st.subheader(LOGS_RAW)
         # Display DataFrame with sorting and filtering options
