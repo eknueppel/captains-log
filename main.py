@@ -18,7 +18,6 @@ def submit_entry():
     st.session_state.new_entry = st.session_state.entry_textarea
     st.session_state.entry_textarea = ''
 
-# Main app
 def main():
     st.title("Captain's Log")
     st.logo('father.jpg')
