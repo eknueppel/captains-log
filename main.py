@@ -4,11 +4,9 @@ import datetime as dt
 
 LOG_FILE = "daily_log.csv"
 
-# Function to save DataFrame
 def save_dataframe(df):
     df.to_csv(LOG_FILE, index=False)  # Saves to a CSV file
 
-# Function to load DataFrame (if it exists)
 def load_dataframe():
     try:
         return pd.read_csv(LOG_FILE)
@@ -26,6 +24,8 @@ def main():
     st.logo('father.jpg')
     if 'df' not in st.session_state:
         st.session_state.df = load_dataframe()
+    if "tags" not in st.session_state:
+            st.session_state.tags = ['Log', 'AE Standup', 'RO Standup', 'Task', 'Reminder']
     
     ADD = "Add Log Entry"
     LOGS_RAW = "View Raw Logs"
@@ -47,10 +47,7 @@ def main():
 
         st.text_area('Entry', height=20, label_visibility="collapsed", key="entry_textarea")
         st.write(f"You wrote {len(st.session_state.new_entry)} characters.")
-
-        # Multiselect for tag selection
-        tags = ['Log', 'AE Standup', 'RO Standup', 'Task', 'Reminder']
-        selected_tags = st.multiselect("Select tags", tags, default='Log', key="tags_multiselect")
+        selected_tags = st.multiselect("Select tags", st.session_state.tags, default='Log', key="tags_multiselect")
 
         if st.button("Add", key="add_button", on_click=submit_entry):
             st.session_state.df.loc[len(st.session_state.df)] = pd.Series(
@@ -75,7 +72,8 @@ def main():
         if not st.checkbox("Show all logs", True):
             if date:
                 temp = temp[temp['Date'] == pd.to_datetime(date)]
-        # Display logs
+
+        temp = temp.iloc[::-1] # Reverse the order of logs
         for i, row in temp.iterrows():
             with st.container(border=True):
                 st.write(f"Log Entry: {row['LogEntry']}")
@@ -88,6 +86,8 @@ def main():
         temp['Date'] = pd.to_datetime(temp['Date']).dt.date
         st.line_chart(temp['Date'].value_counts()) # Line chart of log entries by date
         
+        temp['LogLength'] = temp['LogEntry'].apply(len)
+        st.line_chart(temp.groupby('Date')['LogLength'].mean()) # Chart of log length by date
 
 if __name__ == "__main__":
     main()
