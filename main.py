@@ -2,17 +2,17 @@ import streamlit as st
 import pandas as pd
 import datetime as dt
 
-LOG_FILE = "daily_log.csv"
 
-def save_dataframe(df):
-    df.to_csv(LOG_FILE, index=False)  # Saves to a CSV file
 
-def load_dataframe():
+def save_dataframe(df, file_path):
+    df.to_csv(file_path, index=False)  # Saves to a CSV file
+
+def load_dataframe(file_path):
     try:
-        return pd.read_csv(LOG_FILE)
-    except FileNotFoundError:
-        # Create an empty DataFrame if file not found
-        return pd.DataFrame(columns=['LogEntry', 'Tags', 'Date'])
+        return pd.read_csv(file_path)
+    except FileNotFoundError: # If the file doesn't exist, return an empty DataFrame
+        COLUMNS = ['LogEntry', 'Tags', 'Date']
+        return pd.DataFrame(columns=COLUMNS)
 
 def submit_entry():
     st.session_state.new_entry = st.session_state.entry_textarea
@@ -23,10 +23,11 @@ def add_entry_backup(): # TODO how should this be reapplied? Is there a saved bo
         f.write(st.session_state.entry_textarea)
 
 def main():
+    LOG_FILE = "daily_log.csv"
     st.title("Captain's Log")
     st.logo('father.jpg')
     if 'df' not in st.session_state:
-        st.session_state.df = load_dataframe()
+        st.session_state.df = load_dataframe(LOG_FILE)
     if "tags" not in st.session_state:
             st.session_state.tags = ['Log', 'AE Standup', 'RO Standup', 'Task', 'Reminder', 'Release']
     
@@ -35,10 +36,10 @@ def main():
     LOGS = "View Logs"
     CHARTS = "View Charts"
 
-    navigation_views = [ADD, LOGS_RAW, LOGS, CHARTS]
+    NAVIGATION_VIEWS = [ADD, LOGS_RAW, LOGS, CHARTS]
     navigation_choice = ''
     with st.sidebar:
-        navigation_choice = st.selectbox("Menu", navigation_views)
+        navigation_choice = st.selectbox("Menu", NAVIGATION_VIEWS)
     
     if navigation_choice == ADD:
         st.subheader("Add a new Log. . .")
@@ -58,7 +59,7 @@ def main():
                 {'LogEntry': "\n".join(st.session_state.new_entry.splitlines()), 
                 'Tags': ", ".join(selected_tags), 
                 'Date': pd.to_datetime(date)})
-            save_dataframe(st.session_state.df)  
+            save_dataframe(st.session_state.df, LOG_FILE)  
 
     elif navigation_choice == LOGS_RAW:
         st.subheader(LOGS_RAW)
